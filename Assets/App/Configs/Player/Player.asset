@@ -59,4 +59,4 @@ MonoBehaviour:
     - rid: 2381230076579545230
       type: {class: PresentableModuleConfig, ns: App.Game.Modules.Asset.Runtime.Config.Model, asm: Autumn.Modules.Fbx}
       data:
-        _asset: {fileID: 5016975802056075122, guid: d3d1b64ed838776418497adc12b6cb3d, type: 3}
+        _asset: {fileID: 8172077818790179182, guid: 6204132436d533242ba45803ab348187, type: 3}
