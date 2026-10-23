@@ -1,0 +1,15 @@
+﻿using App.Common.Utilities.Utility.Runtime;
+
+namespace App.Common.ModuleItem.Runtime.Config.Interfaces
+{
+    public interface IModuleItemConfig
+    {
+        string Id { get; }
+        
+        bool HasTag(long tag);
+        
+        Optional<T> GetModule<T>() where T : ModuleConfig;
+        bool TryGetModule<T>(out T config) where T : ModuleConfig;
+        bool HasModule<T>() where T : ModuleConfig;
+    }
+}

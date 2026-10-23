@@ -1,0 +1,21 @@
+{
+    "name": "Autumn.ModuleItem.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Autumn.ModuleItems",
+        "Autumn.ConfigLoader",
+        "Unity.Addressables",
+        "Unity.Addressables.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

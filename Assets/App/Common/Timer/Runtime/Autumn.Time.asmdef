@@ -1,0 +1,4 @@
+﻿{
+  "name": "Autumn.Time",
+  "references":[ "Autumn.Utility", "Autumn.Pool" ]
+}

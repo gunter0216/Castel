@@ -1,0 +1,13 @@
+﻿{
+  "name": "Autumn.DataContainers.Tests",
+  "references": [
+    "Autumn.DataContainers",
+    "Autumn.Utility",
+    "Autumn.DataManager",
+    "Autumn.Logger"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "noEngineReferences": true
+}

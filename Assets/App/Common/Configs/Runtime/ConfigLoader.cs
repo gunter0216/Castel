@@ -1,0 +1,145 @@
+﻿using System.Collections.Generic;
+using App.Common.AssetSystem.Runtime;
+using App.Common.Configs.Runtime;
+using App.Common.Json.Runtime.Deserializer;
+using App.Common.Utilities.Utility.Runtime;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+
+namespace App.Common.Configs.External
+{
+    public class ConfigLoader : IConfigLoader
+    {
+        public const string PlayerPrefsUseLocalConfigsKey = "TestingPanel_UseLocalConfigs";
+
+        private readonly IAssetManager m_AssetManager;
+        private readonly IJsonDeserializer m_JsonDeserializer;
+
+        public ConfigLoader(IAssetManager assetManager, IJsonDeserializer jsonDeserializer)
+        {
+            m_AssetManager = assetManager;
+            m_JsonDeserializer = jsonDeserializer;
+        }
+
+        private bool UseLocalConfigs => PlayerPrefs.GetInt(PlayerPrefsUseLocalConfigsKey, 0) == 1;
+
+        public Optional<T> LoadConfig<T>(string localKey) where T : class
+        {
+            var keyEvaluator = new StringKeyEvaluator(localKey);
+            var configJsonResult = m_AssetManager.LoadSync<TextAsset>(keyEvaluator);
+            if (configJsonResult.HasValue)
+            {
+                var configResult = m_JsonDeserializer.Deserialize<T>(configJsonResult.Value.text);
+                m_AssetManager.UnloadAsset(keyEvaluator);
+                return configResult;
+            }
+
+            Debug.LogError(
+                $"[ConfigLoader] In method LoadLocalConfig, cant load local config {typeof(T).Name} with key {keyEvaluator.RuntimeKey}.");
+            return Optional<T>.Fail();
+        }
+
+        public Optional<T> LoadGameConfig<T>(string localKey) where T : GameConfig
+        {
+            var keyEvaluator = new StringKeyEvaluator(localKey);
+            var configResult = m_AssetManager.LoadSync<T>(keyEvaluator);
+            if (!configResult.HasValue)
+            {
+                Debug.LogError(
+                    $"[ConfigLoader] In method LoadLocalConfig, cant load local config {typeof(T).Name} with key {keyEvaluator.RuntimeKey}.");
+            }
+            
+            return configResult;
+        }
+
+        public Optional<List<T>> LoadGameConfigs<T>(string tag) where T : GameConfig
+        {
+            AsyncOperationHandle<IList<T>> handle = Addressables.LoadAssetsAsync<T>(
+                tag,
+                null,
+                Addressables.MergeMode.Union);
+
+            handle.WaitForCompletion();
+
+            if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result == null)
+            {
+                if (handle.IsValid())
+                {
+                    Addressables.Release(handle);
+                }
+
+                return Optional<List<T>>.Fail();
+            }
+
+            List<T> result = new List<T>(handle.Result);
+
+            return Optional<List<T>>.Success(result);
+        }
+
+        // public T LoadConfig<T>(string localKey, string serverKey) where T : class
+        // {
+        //     Result<T> localConfigResult;
+        //     Result<T> serverConfigResult;
+        //     if (UseLocalConfigs)
+        //     {
+        //         localConfigResult = LoadLocalConfig<T>(localKey);
+        //         if (localConfigResult.IsExist) 
+        //         {
+        //             return localConfigResult.Object;
+        //         }
+        //         
+        //         serverConfigResult = LoadConfigFromServer<T>(serverKey);
+        //         if (serverConfigResult.IsExist)
+        //         {
+        //             return serverConfigResult.Object;
+        //         }
+        //
+        //         return default;
+        //     }
+        //
+        //     if (serverKey.IsNullOrEmpty())
+        //     {
+        //         Debug.LogError($"[ConfigLoader] In method LoadConfig, server key is null.");
+        //         localConfigResult = LoadLocalConfig<T>(localKey);
+        //         if (localConfigResult.IsExist) 
+        //         {
+        //             return localConfigResult.Object;
+        //         }
+        //
+        //         return default;
+        //     }
+        //
+        //     serverConfigResult = LoadConfigFromServer<T>(serverKey);
+        //     if (serverConfigResult.IsExist)
+        //     {
+        //         return serverConfigResult.Object;
+        //     }
+        //
+        //     localConfigResult = LoadLocalConfig<T>(localKey);
+        //     if (localConfigResult.IsExist) 
+        //     {
+        //         return localConfigResult.Object;
+        //     }
+        //
+        //     return default;
+        // }
+        //
+        // public Result<T> LoadConfigFromServer<T>(string serverKey) where T : class
+        // {
+        //     if (UseLocalConfigs)
+        //     {
+        //         return new Result<T>(default, false);
+        //     }
+        //     
+        //     var result =  m_EpicLiveOpsContainer.Get<T>(serverKey);
+        //     if (!result.IsExist)
+        //     {
+        //         Debug.LogWarning($"[ConfigLoader] In method LoadConfigFromServer, cant load config {typeof(T).Name} by key {serverKey}, error {result.Reason}.");
+        //         return new Result<T>(default, false);
+        //     }
+        //
+        //     return new Result<T>(result.Object, true);
+        // }
+    }
+}
